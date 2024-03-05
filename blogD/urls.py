@@ -1,5 +1,7 @@
 from django.urls import path
-from .views import PostList, PostDetail, AuthorList, AuthorDetail
+from .views import PostList, PostDetail, AuthorList, AuthorDetail, LogoutUserView, SingUpUserView, SignInUserView, UserProfileView,\
+    UserEditProfileView, edit_profile
+
 
 urlpatterns = [
     # Эндпоинты для работы с постами
@@ -9,5 +11,11 @@ urlpatterns = [
     # Эндпоинты для работы с авторами
     path('api/authors/', AuthorList.as_view(), name='author-list'),  # GET (список всех авторов), POST (создание нового автора)
     path('api/authors/<int:pk>/', AuthorDetail.as_view(), name='author-detail'),  # GET (информация о конкретном авторе), PUT (обновление автора), DELETE (удаление автора)
+    path('signin/', SignInUserView),
+    path('logout/', LogoutUserView),
+    path('profile/', UserProfileView),
+    path('profile/edit/', UserEditProfileView),
+    path('profile/edit/', edit_profile, name='edit_profile'),
+
 ]
 
