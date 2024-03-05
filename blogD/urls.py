@@ -1,6 +1,6 @@
 from django.urls import path
 from .views import PostList, PostDetail, AuthorList, AuthorDetail, LogoutUserView, SingUpUserView, SignInUserView, UserProfileView,\
-    UserEditProfileView, edit_profile
+    UserEditProfileView, edit_profile, profile_view
 
 
 urlpatterns = [
@@ -13,9 +13,9 @@ urlpatterns = [
     path('api/authors/<int:pk>/', AuthorDetail.as_view(), name='author-detail'),  # GET (информация о конкретном авторе), PUT (обновление автора), DELETE (удаление автора)
     path('signin/', SignInUserView),
     path('logout/', LogoutUserView),
-    path('profile/', UserProfileView),
+    #path('profile/', UserProfileView),
     path('profile/edit/', UserEditProfileView),
     path('profile/edit/', edit_profile, name='edit_profile'),
-
+    path('profile', profile_view, name="profile"),
 ]
 
