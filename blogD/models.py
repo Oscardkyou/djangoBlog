@@ -1,31 +1,25 @@
 from django.db import models
 from django.contrib.auth.models import User
-#from PIL import Image
-from .utils import validate_phone_number
+from django.contrib.auth import authenticate, login, logout
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.authentication import SessionAuthentication
 
 
-class Profile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE,
-        verbose_name="Пользователь")
-    image = models.ImageField(upload_to='profile/',
-        verbose_name="Фото профиля",
-        help_text="Фотография должно быть Х на Х",
-        blank=True, null=True)
-    description = models.TextField(max_length=200,
-        verbose_name="Информация", blank=True, null=True)
-    birth_data = models.DateField(verbose_name="Дата рождения",
-        blank=True, null=True)
-    phone = models.CharField(max_length=20,
-        verbose_name="Номер телефона",
-        validators=[validate_phone_number],
-        blank=True, null=True)
+class CustomUser(User):
+    def __str__(self):
+        return self.username
+
 
 class Author(models.Model):
-    user = models.OneToOneField(Profile, on_delete=models.CASCADE)
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     bio = models.TextField()
 
+
     def __str__(self):
-        return self.user.user.username
+        return self.user.username
 
 
 class Post(models.Model):
@@ -40,6 +34,40 @@ class Post(models.Model):
 
 class Comment(models.Model):
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='comments')
-    author = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     text = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
+
+
+class Subscription(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    author = models.ForeignKey(Author, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
+class SignInView(APIView):
+    def post(self, request):
+        username = request.data.get('username')
+        password = request.data.get('password')
+        user = authenticate(request, username=username, password=password)
+
+        if user is not None:
+            login(request, user)
+            return Response({'message': 'Login successful'}, status=status.HTTP_200_OK)
+        else:
+            return Response({'message': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+
+
+class LogoutView(APIView):
+    def post(self, request):
+        logout(request)
+        return Response({'message': 'Logout successful'}, status=status.HTTP_200_OK)
+
+
+class MyProtectedView(APIView):
+    authentication_classes = [SessionAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        return Response({'message': 'Authenticated user'})
+
